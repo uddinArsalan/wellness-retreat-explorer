@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import FilterPanel from "./FilterPanel";
 import { getCardsInfo } from "../../api/get-cards-info";
 import RetreatCardsList from "./RetreatCardsList";

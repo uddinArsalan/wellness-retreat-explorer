@@ -1,4 +1,3 @@
-
 function Navbar() {
   return (
     <nav className="bg-primary flex items-center p-6 md:justify-normal justify-center">

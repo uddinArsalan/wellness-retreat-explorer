@@ -1,5 +1,3 @@
-import React from "react";
-
 function HeroSection() {
   return (
     <div className="m-6 bg-secondary rounded-md p-8 shadow-md">
