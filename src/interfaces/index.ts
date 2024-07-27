@@ -1,3 +1,4 @@
+type Types = "Signature" | "Standalone"
 export interface WellnessRetreatCardsType {
     title : string;
     description : string;
@@ -5,12 +6,9 @@ export interface WellnessRetreatCardsType {
     location : string;
     price : string;
     condition : string;
+    type : Types;
     image : string;
     tag : string[];
     duration : number;
     id : number
-}
-
-export interface CardsProps {
-  wellnessCardsInfo : WellnessRetreatCardsType[];
 }

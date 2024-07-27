@@ -6,11 +6,12 @@ import { searchByTitle } from "../../api/search-by-title";
 import { filterByType } from "../../api/filter-by-type";
 import { WellnessRetreatCardsType } from "../../interfaces";
 import { useApp } from "../../contexts/AppProvider";
+import CardsSkeletonLoader from "./CardSkeletonLoadin";
 
 function CardsSection() {
-  const { itemsPerPage,totalPages } = useApp();
+  const { itemsPerPage, totalPages } = useApp();
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const {startLoader,completeLoader} = useApp();
+  const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({
     date: "",
     type: "",
@@ -22,96 +23,73 @@ function CardsSection() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, filters]);
 
-  const applyFilters = async () => {
-    // const loaderId = startLoader();
+  const fetchData = async () => {
+    setIsLoading(true);
     try {
-      let filteredData: WellnessRetreatCardsType[] = [];
+      let data: WellnessRetreatCardsType[] = [];
 
       if (filters.search) {
-        filteredData = await searchByTitle(
-          currentPage,
-          itemsPerPage,
-          filters.search
-        );
+        data = await searchByTitle(currentPage, itemsPerPage, filters.search);
       } else if (filters.type) {
-        filteredData = await filterByType(
-          currentPage,
-          itemsPerPage,
-          filters.type
-        );
+        data = await filterByType(currentPage, itemsPerPage, filters.type);
       } else {
-        filteredData = await getCardsInfo(currentPage, itemsPerPage);
+        data = await getCardsInfo(currentPage, itemsPerPage);
       }
 
       if (filters.date) {
-        filteredData = filteredData.filter((item) => {
+        const filterDate = new Date(filters.date);
+        data = data.filter((item) => {
           const itemDate = new Date(item.date * 1000);
-          const filterDate = new Date(filters.date);
-          console.log(itemDate,filterDate);
           return itemDate.toDateString() === filterDate.toDateString();
         });
       }
 
-      setWellnessCardsInfo(filteredData);
-    } catch (err) {
-      console.error("Error applying filters:", err);
-    }
-    // finally{
-    //   completeLoader(loaderId);
-    // }
-  };
-
-
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      applyFilters();
-    }, 300);
-
-    return () => clearTimeout(debounceTimer);
-  }, [filters, currentPage, itemsPerPage]);
-
-  const fetchData = async () => {
-    const loaderId = startLoader();
-    try {
-      const data = await getCardsInfo(currentPage, itemsPerPage);
       setWellnessCardsInfo(data);
     } catch (err) {
       console.error("Error fetching data:", err);
-    }finally{
-      completeLoader(loaderId);
+    } finally {
+      setIsLoading(false);
     }
   };
+
   const handleNext = () => {
-    if(currentPage < totalPages){
+    if (currentPage < totalPages) {
       setCurrentPage((prev) => prev + 1);
     }
   };
+
   const handlePrevious = () => {
     if (currentPage > 1) {
-      setCurrentPage((prevPage) => prevPage - 1);
+      setCurrentPage((prev) => prev - 1);
     }
   };
   return (
-    <div>
+    <div className="">
       <FilterPanel filters={filters} setFilters={setFilters} />
-      <RetreatCardsList wellnessCardsInfo={wellnessCardsInfo}
-      />
-      <div className="flex justify-center items-center gap-2 mt-6 mb-6">
+      {isLoading ? (
+        <CardsSkeletonLoader />
+      ) : (
+        <RetreatCardsList wellnessCardsInfo={wellnessCardsInfo} />
+      )}
+      <div className="flex justify-center items-center mt-8 mb-8">
         <button
-          className="bg-primary font-semibold text-white border-none disabled:bg-opacity-80 rounded-md p-2"
+          className="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-l-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handlePrevious}
           disabled={currentPage <= 1}
         >
-          Previous
+          <span className="mr-2">&larr;</span> Previous
         </button>
+        <span className="mx-4 text-gray-600">
+          Page {currentPage} of {totalPages}
+        </span>
         <button
-          className="bg-primary font-semibold text-white border-none rounded-md p-2 disabled:bg-opacity-80"
+          className="bg-primary hover:bg-primary-dark text-white font-semibold py-2 px-4 rounded-r-md transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={handleNext}
           disabled={currentPage >= totalPages}
         >
-          Next
+          Next <span className="ml-2">&rarr;</span>
         </button>
       </div>
     </div>

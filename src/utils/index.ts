@@ -7,7 +7,8 @@ export function uuidv4() {
   );
 }
 
-export function formatDate(epochSeconds: number) {
+export function formatDate(epochSeconds: number | undefined) {
+  if(!epochSeconds) return 0
   const epochMilliSeconds = epochSeconds * 1000;
   const formattedDate = new Date(epochMilliSeconds);
   return formattedDate.toDateString();
